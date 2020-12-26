@@ -8,9 +8,9 @@ Swiper - is the free and most modern mobile touch slider with hardware accelerat
 Swiper is not compatible with all platforms, it is a modern touch slider which is focused only on modern apps/platforms to bring the best experience and simplicity.
 
 # Getting Started
-  * [Getting Started Guide](http://www.idangero.us/swiper/get-started/)
-  * [API](http://www.idangero.us/swiper/api/)
-  * [Demos](http://www.idangero.us/swiper/demos/)
+  * [Getting Started Guide](https://web.archive.org/web/20191226105315/https://swiperjs.com/get-started/)
+  * [API](https://web.archive.org/web/20200103232442/https://swiperjs.com/api/)
+  * [Demos](https://web.archive.org/web/20191226080942/https://swiperjs.com/demos/)
   * [Forum](http://www.idangero.us/swiper/forum/)
 
 # Dist / Build
