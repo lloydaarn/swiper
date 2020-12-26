@@ -1,24 +1,22 @@
-import { getWindow } from 'ssr-window';
+import { window } from 'ssr-window';
 
-export default function getBreakpoints(breakpoints) {
-  const window = getWindow();
+export default function (breakpoints) {
+  const swiper = this;
   // Get breakpoint for window width
   if (!breakpoints) return undefined;
   let breakpoint = false;
-
-  const points = Object.keys(breakpoints).map((point) => {
-    if (typeof point === 'string' && point.indexOf('@') === 0) {
-      const minRatio = parseFloat(point.substr(1));
-      const value = window.innerHeight * minRatio;
-      return { value, point };
-    }
-    return { value: point, point };
+  const points = [];
+  Object.keys(breakpoints).forEach((point) => {
+    points.push(point);
   });
-
-  points.sort((a, b) => parseInt(a.value, 10) - parseInt(b.value, 10));
+  points.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
   for (let i = 0; i < points.length; i += 1) {
-    const { point, value } = points[i];
-    if (value <= window.innerWidth) {
+    const point = points[i];
+    if (swiper.params.breakpointsInverse) {
+      if (point <= window.innerWidth) {
+        breakpoint = point;
+      }
+    } else if (point >= window.innerWidth && !breakpoint) {
       breakpoint = point;
     }
   }

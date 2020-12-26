@@ -1,12 +1,15 @@
-import { getWindow } from 'ssr-window';
-import { extend } from '../../../utils/utils';
+import { window } from 'ssr-window';
+import Utils from '../../../utils/utils';
+import Support from '../../../utils/support';
+import Browser from '../../../utils/browser';
 
-export default function updateSlides() {
+export default function () {
   const swiper = this;
-  const window = getWindow();
   const params = swiper.params;
 
-  const { $wrapperEl, size: swiperSize, rtlTranslate: rtl, wrongRTL } = swiper;
+  const {
+    $wrapperEl, size: swiperSize, rtlTranslate: rtl, wrongRTL,
+  } = swiper;
   const isVirtual = swiper.virtual && params.virtual.enabled;
   const previousSlidesLength = isVirtual ? swiper.virtual.slides.length : swiper.slides.length;
   const slides = $wrapperEl.children(`.${swiper.params.slideClass}`);
@@ -14,14 +17,6 @@ export default function updateSlides() {
   let snapGrid = [];
   const slidesGrid = [];
   const slidesSizesGrid = [];
-
-  function slidesForMargin(slideEl, slideIndex) {
-    if (!params.cssMode) return true;
-    if (slideIndex === slides.length - 1) {
-      return false;
-    }
-    return true;
-  }
 
   let offsetBefore = params.slidesOffsetBefore;
   if (typeof offsetBefore === 'function') {
@@ -34,7 +29,7 @@ export default function updateSlides() {
   }
 
   const previousSnapGridLength = swiper.snapGrid.length;
-  const previousSlidesGridLength = swiper.slidesGrid.length;
+  const previousSlidesGridLength = swiper.snapGrid.length;
 
   let spaceBetween = params.spaceBetween;
   let slidePosition = -offsetBefore;
@@ -55,20 +50,13 @@ export default function updateSlides() {
 
   let slidesNumberEvenToRows;
   if (params.slidesPerColumn > 1) {
-    if (
-      Math.floor(slidesLength / params.slidesPerColumn) ===
-      slidesLength / swiper.params.slidesPerColumn
-    ) {
+    if (Math.floor(slidesLength / params.slidesPerColumn) === slidesLength / swiper.params.slidesPerColumn) {
       slidesNumberEvenToRows = slidesLength;
     } else {
-      slidesNumberEvenToRows =
-        Math.ceil(slidesLength / params.slidesPerColumn) * params.slidesPerColumn;
+      slidesNumberEvenToRows = Math.ceil(slidesLength / params.slidesPerColumn) * params.slidesPerColumn;
     }
     if (params.slidesPerView !== 'auto' && params.slidesPerColumnFill === 'row') {
-      slidesNumberEvenToRows = Math.max(
-        slidesNumberEvenToRows,
-        params.slidesPerView * params.slidesPerColumn,
-      );
+      slidesNumberEvenToRows = Math.max(slidesNumberEvenToRows, params.slidesPerView * params.slidesPerColumn);
     }
   }
 
@@ -85,48 +73,45 @@ export default function updateSlides() {
       let newSlideOrderIndex;
       let column;
       let row;
-      if (params.slidesPerColumnFill === 'row' && params.slidesPerGroup > 1) {
-        const groupIndex = Math.floor(i / (params.slidesPerGroup * params.slidesPerColumn));
-        const slideIndexInGroup = i - params.slidesPerColumn * params.slidesPerGroup * groupIndex;
-        const columnsInGroup =
-          groupIndex === 0
-            ? params.slidesPerGroup
-            : Math.min(
-                Math.ceil(
-                  (slidesLength - groupIndex * slidesPerColumn * params.slidesPerGroup) /
-                    slidesPerColumn,
-                ),
-                params.slidesPerGroup,
-              );
-        row = Math.floor(slideIndexInGroup / columnsInGroup);
-        column = slideIndexInGroup - row * columnsInGroup + groupIndex * params.slidesPerGroup;
-
-        newSlideOrderIndex = column + (row * slidesNumberEvenToRows) / slidesPerColumn;
-        slide.css({
-          '-webkit-box-ordinal-group': newSlideOrderIndex,
-          '-moz-box-ordinal-group': newSlideOrderIndex,
-          '-ms-flex-order': newSlideOrderIndex,
-          '-webkit-order': newSlideOrderIndex,
-          order: newSlideOrderIndex,
-        });
-      } else if (params.slidesPerColumnFill === 'column') {
-        column = Math.floor(i / slidesPerColumn);
-        row = i - column * slidesPerColumn;
-        if (column > numFullColumns || (column === numFullColumns && row === slidesPerColumn - 1)) {
-          row += 1;
-          if (row >= slidesPerColumn) {
-            row = 0;
-            column += 1;
+      if (
+        (params.slidesPerColumnFill === 'column')
+        || (params.slidesPerColumnFill === 'row' && params.slidesPerGroup > 1)
+      ) {
+        if (params.slidesPerColumnFill === 'column') {
+          column = Math.floor(i / slidesPerColumn);
+          row = i - (column * slidesPerColumn);
+          if (column > numFullColumns || (column === numFullColumns && row === slidesPerColumn - 1)) {
+            row += 1;
+            if (row >= slidesPerColumn) {
+              row = 0;
+              column += 1;
+            }
           }
+        } else {
+          const groupIndex = Math.floor(i / params.slidesPerGroup);
+          row = Math.floor(i / params.slidesPerView) - groupIndex * params.slidesPerColumn;
+          column = i - row * params.slidesPerView - groupIndex * params.slidesPerView;
         }
+        newSlideOrderIndex = column + ((row * slidesNumberEvenToRows) / slidesPerColumn);
+        slide
+          .css({
+            '-webkit-box-ordinal-group': newSlideOrderIndex,
+            '-moz-box-ordinal-group': newSlideOrderIndex,
+            '-ms-flex-order': newSlideOrderIndex,
+            '-webkit-order': newSlideOrderIndex,
+            order: newSlideOrderIndex,
+          });
       } else {
         row = Math.floor(i / slidesPerRow);
-        column = i - row * slidesPerRow;
+        column = i - (row * slidesPerRow);
       }
-      slide.css(
-        `margin-${swiper.isHorizontal() ? 'top' : 'left'}`,
-        row !== 0 && params.spaceBetween && `${params.spaceBetween}px`,
-      );
+      slide
+        .css(
+          `margin-${swiper.isHorizontal() ? 'top' : 'left'}`,
+          (row !== 0 && params.spaceBetween) && (`${params.spaceBetween}px`)
+        )
+        .attr('data-swiper-column', column)
+        .attr('data-swiper-row', row);
     }
     if (slide.css('display') === 'none') continue; // eslint-disable-line
 
@@ -141,46 +126,34 @@ export default function updateSlides() {
         slide[0].style.webkitTransform = 'none';
       }
       if (params.roundLengths) {
-        slideSize = swiper.isHorizontal() ? slide.outerWidth(true) : slide.outerHeight(true);
+        slideSize = swiper.isHorizontal()
+          ? slide.outerWidth(true)
+          : slide.outerHeight(true);
       } else {
         // eslint-disable-next-line
         if (swiper.isHorizontal()) {
-          const width = parseFloat(slideStyles.getPropertyValue('width') || 0);
-          const paddingLeft = parseFloat(slideStyles.getPropertyValue('padding-left') || 0);
-          const paddingRight = parseFloat(slideStyles.getPropertyValue('padding-right') || 0);
-          const marginLeft = parseFloat(slideStyles.getPropertyValue('margin-left') || 0);
-          const marginRight = parseFloat(slideStyles.getPropertyValue('margin-right') || 0);
+          const width = parseFloat(slideStyles.getPropertyValue('width'));
+          const paddingLeft = parseFloat(slideStyles.getPropertyValue('padding-left'));
+          const paddingRight = parseFloat(slideStyles.getPropertyValue('padding-right'));
+          const marginLeft = parseFloat(slideStyles.getPropertyValue('margin-left'));
+          const marginRight = parseFloat(slideStyles.getPropertyValue('margin-right'));
           const boxSizing = slideStyles.getPropertyValue('box-sizing');
-          if (boxSizing && boxSizing === 'border-box') {
+          if (boxSizing && boxSizing === 'border-box' && !Browser.isIE) {
             slideSize = width + marginLeft + marginRight;
           } else {
-            const { clientWidth, offsetWidth } = slide[0];
-            slideSize =
-              width +
-              paddingLeft +
-              paddingRight +
-              marginLeft +
-              marginRight +
-              (offsetWidth - clientWidth);
+            slideSize = width + paddingLeft + paddingRight + marginLeft + marginRight;
           }
         } else {
-          const height = parseFloat(slideStyles.getPropertyValue('height') || 0);
-          const paddingTop = parseFloat(slideStyles.getPropertyValue('padding-top') || 0);
-          const paddingBottom = parseFloat(slideStyles.getPropertyValue('padding-bottom') || 0);
-          const marginTop = parseFloat(slideStyles.getPropertyValue('margin-top') || 0);
-          const marginBottom = parseFloat(slideStyles.getPropertyValue('margin-bottom') || 0);
+          const height = parseFloat(slideStyles.getPropertyValue('height'));
+          const paddingTop = parseFloat(slideStyles.getPropertyValue('padding-top'));
+          const paddingBottom = parseFloat(slideStyles.getPropertyValue('padding-bottom'));
+          const marginTop = parseFloat(slideStyles.getPropertyValue('margin-top'));
+          const marginBottom = parseFloat(slideStyles.getPropertyValue('margin-bottom'));
           const boxSizing = slideStyles.getPropertyValue('box-sizing');
-          if (boxSizing && boxSizing === 'border-box') {
+          if (boxSizing && boxSizing === 'border-box' && !Browser.isIE) {
             slideSize = height + marginTop + marginBottom;
           } else {
-            const { clientHeight, offsetHeight } = slide[0];
-            slideSize =
-              height +
-              paddingTop +
-              paddingBottom +
-              marginTop +
-              marginBottom +
-              (offsetHeight - clientHeight);
+            slideSize = height + paddingTop + paddingBottom + marginTop + marginBottom;
           }
         }
       }
@@ -192,7 +165,7 @@ export default function updateSlides() {
       }
       if (params.roundLengths) slideSize = Math.floor(slideSize);
     } else {
-      slideSize = (swiperSize - (params.slidesPerView - 1) * spaceBetween) / params.slidesPerView;
+      slideSize = (swiperSize - ((params.slidesPerView - 1) * spaceBetween)) / params.slidesPerView;
       if (params.roundLengths) slideSize = Math.floor(slideSize);
 
       if (slides[i]) {
@@ -208,23 +181,18 @@ export default function updateSlides() {
     }
     slidesSizesGrid.push(slideSize);
 
+
     if (params.centeredSlides) {
-      slidePosition = slidePosition + slideSize / 2 + prevSlideSize / 2 + spaceBetween;
-      if (prevSlideSize === 0 && i !== 0)
-        slidePosition = slidePosition - swiperSize / 2 - spaceBetween;
-      if (i === 0) slidePosition = slidePosition - swiperSize / 2 - spaceBetween;
+      slidePosition = slidePosition + (slideSize / 2) + (prevSlideSize / 2) + spaceBetween;
+      if (prevSlideSize === 0 && i !== 0) slidePosition = slidePosition - (swiperSize / 2) - spaceBetween;
+      if (i === 0) slidePosition = slidePosition - (swiperSize / 2) - spaceBetween;
       if (Math.abs(slidePosition) < 1 / 1000) slidePosition = 0;
       if (params.roundLengths) slidePosition = Math.floor(slidePosition);
-      if (index % params.slidesPerGroup === 0) snapGrid.push(slidePosition);
+      if ((index) % params.slidesPerGroup === 0) snapGrid.push(slidePosition);
       slidesGrid.push(slidePosition);
     } else {
       if (params.roundLengths) slidePosition = Math.floor(slidePosition);
-      if (
-        (index - Math.min(swiper.params.slidesPerGroupSkip, index)) %
-          swiper.params.slidesPerGroup ===
-        0
-      )
-        snapGrid.push(slidePosition);
+      if ((index) % params.slidesPerGroup === 0) snapGrid.push(slidePosition);
       slidesGrid.push(slidePosition);
       slidePosition = slidePosition + slideSize + spaceBetween;
     }
@@ -238,32 +206,20 @@ export default function updateSlides() {
   swiper.virtualSize = Math.max(swiper.virtualSize, swiperSize) + offsetAfter;
   let newSlidesGrid;
 
-  if (rtl && wrongRTL && (params.effect === 'slide' || params.effect === 'coverflow')) {
+  if (
+    rtl && wrongRTL && (params.effect === 'slide' || params.effect === 'coverflow')) {
     $wrapperEl.css({ width: `${swiper.virtualSize + params.spaceBetween}px` });
   }
-  if (params.setWrapperSize) {
-    if (swiper.isHorizontal())
-      $wrapperEl.css({
-        width: `${swiper.virtualSize + params.spaceBetween}px`,
-      });
-    else
-      $wrapperEl.css({
-        height: `${swiper.virtualSize + params.spaceBetween}px`,
-      });
+  if (!Support.flexbox || params.setWrapperSize) {
+    if (swiper.isHorizontal()) $wrapperEl.css({ width: `${swiper.virtualSize + params.spaceBetween}px` });
+    else $wrapperEl.css({ height: `${swiper.virtualSize + params.spaceBetween}px` });
   }
 
   if (params.slidesPerColumn > 1) {
     swiper.virtualSize = (slideSize + params.spaceBetween) * slidesNumberEvenToRows;
-    swiper.virtualSize =
-      Math.ceil(swiper.virtualSize / params.slidesPerColumn) - params.spaceBetween;
-    if (swiper.isHorizontal())
-      $wrapperEl.css({
-        width: `${swiper.virtualSize + params.spaceBetween}px`,
-      });
-    else
-      $wrapperEl.css({
-        height: `${swiper.virtualSize + params.spaceBetween}px`,
-      });
+    swiper.virtualSize = Math.ceil(swiper.virtualSize / params.slidesPerColumn) - params.spaceBetween;
+    if (swiper.isHorizontal()) $wrapperEl.css({ width: `${swiper.virtualSize + params.spaceBetween}px` });
+    else $wrapperEl.css({ height: `${swiper.virtualSize + params.spaceBetween}px` });
     if (params.centeredSlides) {
       newSlidesGrid = [];
       for (let i = 0; i < snapGrid.length; i += 1) {
@@ -286,10 +242,7 @@ export default function updateSlides() {
       }
     }
     snapGrid = newSlidesGrid;
-    if (
-      Math.floor(swiper.virtualSize - swiperSize) - Math.floor(snapGrid[snapGrid.length - 1]) >
-      1
-    ) {
+    if (Math.floor(swiper.virtualSize - swiperSize) - Math.floor(snapGrid[snapGrid.length - 1]) > 1) {
       snapGrid.push(swiper.virtualSize - swiperSize);
     }
   }
@@ -297,23 +250,9 @@ export default function updateSlides() {
 
   if (params.spaceBetween !== 0) {
     if (swiper.isHorizontal()) {
-      if (rtl) slides.filter(slidesForMargin).css({ marginLeft: `${spaceBetween}px` });
-      else slides.filter(slidesForMargin).css({ marginRight: `${spaceBetween}px` });
-    } else slides.filter(slidesForMargin).css({ marginBottom: `${spaceBetween}px` });
-  }
-
-  if (params.centeredSlides && params.centeredSlidesBounds) {
-    let allSlidesSize = 0;
-    slidesSizesGrid.forEach((slideSizeValue) => {
-      allSlidesSize += slideSizeValue + (params.spaceBetween ? params.spaceBetween : 0);
-    });
-    allSlidesSize -= params.spaceBetween;
-    const maxSnap = allSlidesSize - swiperSize;
-    snapGrid = snapGrid.map((snap) => {
-      if (snap < 0) return -offsetBefore;
-      if (snap > maxSnap) return maxSnap + offsetAfter;
-      return snap;
-    });
+      if (rtl) slides.css({ marginLeft: `${spaceBetween}px` });
+      else slides.css({ marginRight: `${spaceBetween}px` });
+    } else slides.css({ marginBottom: `${spaceBetween}px` });
   }
 
   if (params.centerInsufficientSlides) {
@@ -333,7 +272,7 @@ export default function updateSlides() {
     }
   }
 
-  extend(swiper, {
+  Utils.extend(swiper, {
     slides,
     snapGrid,
     slidesGrid,

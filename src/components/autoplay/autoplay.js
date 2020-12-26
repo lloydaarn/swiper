@@ -1,6 +1,5 @@
 /* eslint no-underscore-dangle: "off" */
-import { getDocument } from 'ssr-window';
-import { nextTick, bindModuleMethods } from '../../utils/utils';
+import Utils from '../../utils/utils';
 
 const Autoplay = {
   run() {
@@ -11,43 +10,33 @@ const Autoplay = {
       delay = $activeSlideEl.attr('data-swiper-autoplay') || swiper.params.autoplay.delay;
     }
     clearTimeout(swiper.autoplay.timeout);
-    swiper.autoplay.timeout = nextTick(() => {
-      let autoplayResult;
+    swiper.autoplay.timeout = Utils.nextTick(() => {
       if (swiper.params.autoplay.reverseDirection) {
         if (swiper.params.loop) {
           swiper.loopFix();
-          autoplayResult = swiper.slidePrev(swiper.params.speed, true, true);
+          swiper.slidePrev(swiper.params.speed, true, true);
           swiper.emit('autoplay');
         } else if (!swiper.isBeginning) {
-          autoplayResult = swiper.slidePrev(swiper.params.speed, true, true);
+          swiper.slidePrev(swiper.params.speed, true, true);
           swiper.emit('autoplay');
         } else if (!swiper.params.autoplay.stopOnLastSlide) {
-          autoplayResult = swiper.slideTo(
-            swiper.slides.length - 1,
-            swiper.params.speed,
-            true,
-            true,
-          );
+          swiper.slideTo(swiper.slides.length - 1, swiper.params.speed, true, true);
           swiper.emit('autoplay');
         } else {
           swiper.autoplay.stop();
         }
       } else if (swiper.params.loop) {
         swiper.loopFix();
-        autoplayResult = swiper.slideNext(swiper.params.speed, true, true);
+        swiper.slideNext(swiper.params.speed, true, true);
         swiper.emit('autoplay');
       } else if (!swiper.isEnd) {
-        autoplayResult = swiper.slideNext(swiper.params.speed, true, true);
+        swiper.slideNext(swiper.params.speed, true, true);
         swiper.emit('autoplay');
       } else if (!swiper.params.autoplay.stopOnLastSlide) {
-        autoplayResult = swiper.slideTo(0, swiper.params.speed, true, true);
+        swiper.slideTo(0, swiper.params.speed, true, true);
         swiper.emit('autoplay');
       } else {
         swiper.autoplay.stop();
-      }
-      if (swiper.params.cssMode && swiper.autoplay.running) swiper.autoplay.run();
-      else if (autoplayResult === false) {
-        swiper.autoplay.run();
       }
     }, delay);
   },
@@ -87,33 +76,6 @@ const Autoplay = {
       swiper.$wrapperEl[0].addEventListener('webkitTransitionEnd', swiper.autoplay.onTransitionEnd);
     }
   },
-  onVisibilityChange() {
-    const swiper = this;
-    const document = getDocument();
-    if (document.visibilityState === 'hidden' && swiper.autoplay.running) {
-      swiper.autoplay.pause();
-    }
-    if (document.visibilityState === 'visible' && swiper.autoplay.paused) {
-      swiper.autoplay.run();
-      swiper.autoplay.paused = false;
-    }
-  },
-  onTransitionEnd(e) {
-    const swiper = this;
-    if (!swiper || swiper.destroyed || !swiper.$wrapperEl) return;
-    if (e.target !== swiper.$wrapperEl[0]) return;
-    swiper.$wrapperEl[0].removeEventListener('transitionend', swiper.autoplay.onTransitionEnd);
-    swiper.$wrapperEl[0].removeEventListener(
-      'webkitTransitionEnd',
-      swiper.autoplay.onTransitionEnd,
-    );
-    swiper.autoplay.paused = false;
-    if (!swiper.autoplay.running) {
-      swiper.autoplay.stop();
-    } else {
-      swiper.autoplay.run();
-    }
-  },
 };
 
 export default {
@@ -130,23 +92,38 @@ export default {
   },
   create() {
     const swiper = this;
-    bindModuleMethods(swiper, {
+    Utils.extend(swiper, {
       autoplay: {
-        ...Autoplay,
         running: false,
         paused: false,
+        run: Autoplay.run.bind(swiper),
+        start: Autoplay.start.bind(swiper),
+        stop: Autoplay.stop.bind(swiper),
+        pause: Autoplay.pause.bind(swiper),
+        onTransitionEnd(e) {
+          if (!swiper || swiper.destroyed || !swiper.$wrapperEl) return;
+          if (e.target !== this) return;
+          swiper.$wrapperEl[0].removeEventListener('transitionend', swiper.autoplay.onTransitionEnd);
+          swiper.$wrapperEl[0].removeEventListener('webkitTransitionEnd', swiper.autoplay.onTransitionEnd);
+          swiper.autoplay.paused = false;
+          if (!swiper.autoplay.running) {
+            swiper.autoplay.stop();
+          } else {
+            swiper.autoplay.run();
+          }
+        },
       },
     });
   },
   on: {
-    init(swiper) {
+    init() {
+      const swiper = this;
       if (swiper.params.autoplay.enabled) {
         swiper.autoplay.start();
-        const document = getDocument();
-        document.addEventListener('visibilitychange', swiper.autoplay.onVisibilityChange);
       }
     },
-    beforeTransitionStart(swiper, speed, internal) {
+    beforeTransitionStart(speed, internal) {
+      const swiper = this;
       if (swiper.autoplay.running) {
         if (internal || !swiper.params.autoplay.disableOnInteraction) {
           swiper.autoplay.pause(speed);
@@ -155,7 +132,8 @@ export default {
         }
       }
     },
-    sliderFirstMove(swiper) {
+    sliderFirstMove() {
+      const swiper = this;
       if (swiper.autoplay.running) {
         if (swiper.params.autoplay.disableOnInteraction) {
           swiper.autoplay.stop();
@@ -164,21 +142,11 @@ export default {
         }
       }
     },
-    touchEnd(swiper) {
-      if (
-        swiper.params.cssMode &&
-        swiper.autoplay.paused &&
-        !swiper.params.autoplay.disableOnInteraction
-      ) {
-        swiper.autoplay.run();
-      }
-    },
-    destroy(swiper) {
+    destroy() {
+      const swiper = this;
       if (swiper.autoplay.running) {
         swiper.autoplay.stop();
       }
-      const document = getDocument();
-      document.removeEventListener('visibilitychange', swiper.autoplay.onVisibilityChange);
     },
   },
 };

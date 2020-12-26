@@ -1,8 +1,12 @@
 import $ from '../../../utils/dom';
 
-export default function updateSlidesProgress(translate = (this && this.translate) || 0) {
+export default function (translate) {
   const swiper = this;
   const params = swiper.params;
+  if (typeof translate === 'undefined') {
+    // eslint-disable-next-line
+    translate = (swiper && swiper.translate) || 0;
+  }
 
   const { slides, rtlTranslate: rtl } = swiper;
 
@@ -20,18 +24,15 @@ export default function updateSlidesProgress(translate = (this && this.translate
 
   for (let i = 0; i < slides.length; i += 1) {
     const slide = slides[i];
-    const slideProgress =
-      (offsetCenter +
-        (params.centeredSlides ? swiper.minTranslate() : 0) -
-        slide.swiperSlideOffset) /
-      (slide.swiperSlideSize + params.spaceBetween);
-    if (params.watchSlidesVisibility || (params.centeredSlides && params.autoHeight)) {
+    const slideProgress = (
+      (offsetCenter + (params.centeredSlides ? swiper.minTranslate() : 0)) - slide.swiperSlideOffset
+    ) / (slide.swiperSlideSize + params.spaceBetween);
+    if (params.watchSlidesVisibility) {
       const slideBefore = -(offsetCenter - slide.swiperSlideOffset);
       const slideAfter = slideBefore + swiper.slidesSizesGrid[i];
-      const isVisible =
-        (slideBefore >= 0 && slideBefore < swiper.size - 1) ||
-        (slideAfter > 1 && slideAfter <= swiper.size) ||
-        (slideBefore <= 0 && slideAfter >= swiper.size);
+      const isVisible = (slideBefore >= 0 && slideBefore < swiper.size - 1)
+                || (slideAfter > 1 && slideAfter <= swiper.size)
+                || (slideBefore <= 0 && slideAfter >= swiper.size);
       if (isVisible) {
         swiper.visibleSlides.push(slide);
         swiper.visibleSlidesIndexes.push(i);

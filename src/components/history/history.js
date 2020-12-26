@@ -1,10 +1,9 @@
-import { getWindow } from 'ssr-window';
-import { bindModuleMethods } from '../../utils/utils';
+import { window } from 'ssr-window';
+import Utils from '../../utils/utils';
 
 const History = {
   init() {
     const swiper = this;
-    const window = getWindow();
     if (!swiper.params.history) return;
     if (!window.history || !window.history.pushState) {
       swiper.params.history.enabled = false;
@@ -13,7 +12,7 @@ const History = {
     }
     const history = swiper.history;
     history.initialized = true;
-    history.paths = History.getPathValues(swiper.params.url);
+    history.paths = History.getPathValues();
     if (!history.paths.key && !history.paths.value) return;
     history.scrollToSlide(0, history.paths.value, swiper.params.runCallbacksOnInit);
     if (!swiper.params.history.replaceState) {
@@ -22,28 +21,17 @@ const History = {
   },
   destroy() {
     const swiper = this;
-    const window = getWindow();
     if (!swiper.params.history.replaceState) {
       window.removeEventListener('popstate', swiper.history.setHistoryPopState);
     }
   },
   setHistoryPopState() {
     const swiper = this;
-    swiper.history.paths = History.getPathValues(swiper.params.url);
+    swiper.history.paths = History.getPathValues();
     swiper.history.scrollToSlide(swiper.params.speed, swiper.history.paths.value, false);
   },
-  getPathValues(urlOverride) {
-    const window = getWindow();
-    let location;
-    if (urlOverride) {
-      location = new URL(urlOverride);
-    } else {
-      location = window.location;
-    }
-    const pathArray = location.pathname
-      .slice(1)
-      .split('/')
-      .filter((part) => part !== '');
+  getPathValues() {
+    const pathArray = window.location.pathname.slice(1).split('/').filter((part) => part !== '');
     const total = pathArray.length;
     const key = pathArray[total - 2];
     const value = pathArray[total - 1];
@@ -51,17 +39,10 @@ const History = {
   },
   setHistory(key, index) {
     const swiper = this;
-    const window = getWindow();
     if (!swiper.history.initialized || !swiper.params.history.enabled) return;
-    let location;
-    if (swiper.params.url) {
-      location = new URL(swiper.params.url);
-    } else {
-      location = window.location;
-    }
     const slide = swiper.slides.eq(index);
     let value = History.slugify(slide.attr('data-history'));
-    if (!location.pathname.includes(key)) {
+    if (!window.location.pathname.includes(key)) {
       value = `${key}/${value}`;
     }
     const currentState = window.history.state;
@@ -75,8 +56,7 @@ const History = {
     }
   },
   slugify(text) {
-    return text
-      .toString()
+    return text.toString()
       .replace(/\s+/g, '-')
       .replace(/[^\w-]+/g, '')
       .replace(/--+/g, '-')
@@ -111,30 +91,32 @@ export default {
   },
   create() {
     const swiper = this;
-    bindModuleMethods(swiper, {
+    Utils.extend(swiper, {
       history: {
-        ...History,
+        init: History.init.bind(swiper),
+        setHistory: History.setHistory.bind(swiper),
+        setHistoryPopState: History.setHistoryPopState.bind(swiper),
+        scrollToSlide: History.scrollToSlide.bind(swiper),
+        destroy: History.destroy.bind(swiper),
       },
     });
   },
   on: {
-    init(swiper) {
+    init() {
+      const swiper = this;
       if (swiper.params.history.enabled) {
         swiper.history.init();
       }
     },
-    destroy(swiper) {
+    destroy() {
+      const swiper = this;
       if (swiper.params.history.enabled) {
         swiper.history.destroy();
       }
     },
-    transitionEnd(swiper) {
+    transitionEnd() {
+      const swiper = this;
       if (swiper.history.initialized) {
-        swiper.history.setHistory(swiper.params.history.key, swiper.activeIndex);
-      }
-    },
-    slideChange(swiper) {
-      if (swiper.history.initialized && swiper.params.cssMode) {
         swiper.history.setHistory(swiper.params.history.key, swiper.activeIndex);
       }
     },

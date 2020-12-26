@@ -1,12 +1,11 @@
 import $ from '../../../utils/dom';
-import { nextTick } from '../../../utils/utils';
+import Utils from '../../../utils/utils';
 
-export default function slideToClickedSlide() {
+export default function () {
   const swiper = this;
   const { params, $wrapperEl } = swiper;
 
-  const slidesPerView =
-    params.slidesPerView === 'auto' ? swiper.slidesPerViewDynamic() : params.slidesPerView;
+  const slidesPerView = params.slidesPerView === 'auto' ? swiper.slidesPerViewDynamic() : params.slidesPerView;
   let slideToIndex = swiper.clickedIndex;
   let realIndex;
   if (params.loop) {
@@ -14,18 +13,16 @@ export default function slideToClickedSlide() {
     realIndex = parseInt($(swiper.clickedSlide).attr('data-swiper-slide-index'), 10);
     if (params.centeredSlides) {
       if (
-        slideToIndex < swiper.loopedSlides - slidesPerView / 2 ||
-        slideToIndex > swiper.slides.length - swiper.loopedSlides + slidesPerView / 2
+        (slideToIndex < swiper.loopedSlides - (slidesPerView / 2))
+        || (slideToIndex > (swiper.slides.length - swiper.loopedSlides) + (slidesPerView / 2))
       ) {
         swiper.loopFix();
         slideToIndex = $wrapperEl
-          .children(
-            `.${params.slideClass}[data-swiper-slide-index="${realIndex}"]:not(.${params.slideDuplicateClass})`,
-          )
+          .children(`.${params.slideClass}[data-swiper-slide-index="${realIndex}"]:not(.${params.slideDuplicateClass})`)
           .eq(0)
           .index();
 
-        nextTick(() => {
+        Utils.nextTick(() => {
           swiper.slideTo(slideToIndex);
         });
       } else {
@@ -34,13 +31,11 @@ export default function slideToClickedSlide() {
     } else if (slideToIndex > swiper.slides.length - slidesPerView) {
       swiper.loopFix();
       slideToIndex = $wrapperEl
-        .children(
-          `.${params.slideClass}[data-swiper-slide-index="${realIndex}"]:not(.${params.slideDuplicateClass})`,
-        )
+        .children(`.${params.slideClass}[data-swiper-slide-index="${realIndex}"]:not(.${params.slideDuplicateClass})`)
         .eq(0)
         .index();
 
-      nextTick(() => {
+      Utils.nextTick(() => {
         swiper.slideTo(slideToIndex);
       });
     } else {

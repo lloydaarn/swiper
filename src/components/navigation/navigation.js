@@ -1,5 +1,5 @@
 import $ from '../../utils/dom';
-import { extend, bindModuleMethods } from '../../utils/utils';
+import Utils from '../../utils/utils';
 
 const Navigation = {
   update() {
@@ -16,9 +16,7 @@ const Navigation = {
       } else {
         $prevEl.removeClass(params.disabledClass);
       }
-      $prevEl[swiper.params.watchOverflow && swiper.isLocked ? 'addClass' : 'removeClass'](
-        params.lockClass,
-      );
+      $prevEl[swiper.params.watchOverflow && swiper.isLocked ? 'addClass' : 'removeClass'](params.lockClass);
     }
     if ($nextEl && $nextEl.length > 0) {
       if (swiper.isEnd) {
@@ -26,9 +24,7 @@ const Navigation = {
       } else {
         $nextEl.removeClass(params.disabledClass);
       }
-      $nextEl[swiper.params.watchOverflow && swiper.isLocked ? 'addClass' : 'removeClass'](
-        params.lockClass,
-      );
+      $nextEl[swiper.params.watchOverflow && swiper.isLocked ? 'addClass' : 'removeClass'](params.lockClass);
     }
   },
   onPrevClick(e) {
@@ -53,10 +49,10 @@ const Navigation = {
     if (params.nextEl) {
       $nextEl = $(params.nextEl);
       if (
-        swiper.params.uniqueNavElements &&
-        typeof params.nextEl === 'string' &&
-        $nextEl.length > 1 &&
-        swiper.$el.find(params.nextEl).length === 1
+        swiper.params.uniqueNavElements
+        && typeof params.nextEl === 'string'
+        && $nextEl.length > 1
+        && swiper.$el.find(params.nextEl).length === 1
       ) {
         $nextEl = swiper.$el.find(params.nextEl);
       }
@@ -64,10 +60,10 @@ const Navigation = {
     if (params.prevEl) {
       $prevEl = $(params.prevEl);
       if (
-        swiper.params.uniqueNavElements &&
-        typeof params.prevEl === 'string' &&
-        $prevEl.length > 1 &&
-        swiper.$el.find(params.prevEl).length === 1
+        swiper.params.uniqueNavElements
+        && typeof params.prevEl === 'string'
+        && $prevEl.length > 1
+        && swiper.$el.find(params.prevEl).length === 1
       ) {
         $prevEl = swiper.$el.find(params.prevEl);
       }
@@ -80,7 +76,7 @@ const Navigation = {
       $prevEl.on('click', swiper.navigation.onPrevClick);
     }
 
-    extend(swiper.navigation, {
+    Utils.extend(swiper.navigation, {
       $nextEl,
       nextEl: $nextEl && $nextEl[0],
       $prevEl,
@@ -116,32 +112,41 @@ export default {
   },
   create() {
     const swiper = this;
-    bindModuleMethods(swiper, {
+    Utils.extend(swiper, {
       navigation: {
-        ...Navigation,
+        init: Navigation.init.bind(swiper),
+        update: Navigation.update.bind(swiper),
+        destroy: Navigation.destroy.bind(swiper),
+        onNextClick: Navigation.onNextClick.bind(swiper),
+        onPrevClick: Navigation.onPrevClick.bind(swiper),
       },
     });
   },
   on: {
-    init(swiper) {
+    init() {
+      const swiper = this;
       swiper.navigation.init();
       swiper.navigation.update();
     },
-    toEdge(swiper) {
+    toEdge() {
+      const swiper = this;
       swiper.navigation.update();
     },
-    fromEdge(swiper) {
+    fromEdge() {
+      const swiper = this;
       swiper.navigation.update();
     },
-    destroy(swiper) {
+    destroy() {
+      const swiper = this;
       swiper.navigation.destroy();
     },
-    click(swiper, e) {
+    click(e) {
+      const swiper = this;
       const { $nextEl, $prevEl } = swiper.navigation;
       if (
-        swiper.params.navigation.hideOnClick &&
-        !$(e.target).is($prevEl) &&
-        !$(e.target).is($nextEl)
+        swiper.params.navigation.hideOnClick
+        && !$(e.target).is($prevEl)
+        && !$(e.target).is($nextEl)
       ) {
         let isHidden;
         if ($nextEl) {
@@ -150,9 +155,9 @@ export default {
           isHidden = $prevEl.hasClass(swiper.params.navigation.hiddenClass);
         }
         if (isHidden === true) {
-          swiper.emit('navigationShow');
+          swiper.emit('navigationShow', swiper);
         } else {
-          swiper.emit('navigationHide');
+          swiper.emit('navigationHide', swiper);
         }
         if ($nextEl) {
           $nextEl.toggleClass(swiper.params.navigation.hiddenClass);

@@ -1,4 +1,4 @@
-export default function onResize() {
+export default function () {
   const swiper = this;
 
   const { params, el } = swiper;
@@ -20,18 +20,23 @@ export default function onResize() {
   swiper.updateSize();
   swiper.updateSlides();
 
-  swiper.updateSlidesClasses();
-  if (
-    (params.slidesPerView === 'auto' || params.slidesPerView > 1) &&
-    swiper.isEnd &&
-    !swiper.isBeginning &&
-    !swiper.params.centeredSlides
-  ) {
-    swiper.slideTo(swiper.slides.length - 1, 0, false, true);
-  } else {
-    swiper.slideTo(swiper.activeIndex, 0, false, true);
-  }
+  if (params.freeMode) {
+    const newTranslate = Math.min(Math.max(swiper.translate, swiper.maxTranslate()), swiper.minTranslate());
+    swiper.setTranslate(newTranslate);
+    swiper.updateActiveIndex();
+    swiper.updateSlidesClasses();
 
+    if (params.autoHeight) {
+      swiper.updateAutoHeight();
+    }
+  } else {
+    swiper.updateSlidesClasses();
+    if ((params.slidesPerView === 'auto' || params.slidesPerView > 1) && swiper.isEnd && !swiper.params.centeredSlides) {
+      swiper.slideTo(swiper.slides.length - 1, 0, false, true);
+    } else {
+      swiper.slideTo(swiper.activeIndex, 0, false, true);
+    }
+  }
   if (swiper.autoplay && swiper.autoplay.running && swiper.autoplay.paused) {
     swiper.autoplay.run();
   }

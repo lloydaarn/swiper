@@ -1,11 +1,7 @@
-export default function unsetGrabCursor() {
+import Support from '../../../utils/support';
+
+export default function () {
   const swiper = this;
-  if (
-    swiper.support.touch ||
-    (swiper.params.watchOverflow && swiper.isLocked) ||
-    swiper.params.cssMode
-  ) {
-    return;
-  }
+  if (Support.touch || (swiper.params.watchOverflow && swiper.isLocked)) return;
   swiper.el.style.cursor = '';
 }

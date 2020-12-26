@@ -1,6 +1,12 @@
-export default function addClasses() {
+import Support from '../../../utils/support';
+import Device from '../../../utils/device';
+import Browser from '../../../utils/browser';
+
+export default function () {
   const swiper = this;
-  const { classNames, params, rtl, $el, device } = swiper;
+  const {
+    classNames, params, rtl, $el,
+  } = swiper;
   const suffixes = [];
 
   suffixes.push('initialized');
@@ -8,6 +14,9 @@ export default function addClasses() {
 
   if (params.freeMode) {
     suffixes.push('free-mode');
+  }
+  if (!Support.flexbox) {
+    suffixes.push('no-flexbox');
   }
   if (params.autoHeight) {
     suffixes.push('autoheight');
@@ -17,19 +26,16 @@ export default function addClasses() {
   }
   if (params.slidesPerColumn > 1) {
     suffixes.push('multirow');
-    if (params.slidesPerColumnFill === 'column') {
-      suffixes.push('multirow-column');
-    }
   }
-  if (device.android) {
+  if (Device.android) {
     suffixes.push('android');
   }
-  if (device.ios) {
+  if (Device.ios) {
     suffixes.push('ios');
   }
-
-  if (params.cssMode) {
-    suffixes.push('css-mode');
+  // WP8 Touch Events Fix
+  if ((Browser.isIE || Browser.isEdge) && (Support.pointerEvents || Support.prefixedPointerEvents)) {
+    suffixes.push(`wp8-${params.direction}`);
   }
 
   suffixes.forEach((suffix) => {
@@ -37,6 +43,4 @@ export default function addClasses() {
   });
 
   $el.addClass(classNames.join(' '));
-
-  swiper.emitContainerClasses();
 }

@@ -3,8 +3,5 @@ build
 playground
 node_modules
 dist
-package
+package.js
 src/swiper.js
-src/angular
-playground-angular
-postinstall.js

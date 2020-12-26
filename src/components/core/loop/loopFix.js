@@ -1,16 +1,7 @@
-export default function loopFix() {
+export default function () {
   const swiper = this;
-
-  swiper.emit('beforeLoopFix');
-
   const {
-    activeIndex,
-    slides,
-    loopedSlides,
-    allowSlidePrev,
-    allowSlideNext,
-    snapGrid,
-    rtlTranslate: rtl,
+    params, activeIndex, slides, loopedSlides, allowSlidePrev, allowSlideNext, snapGrid, rtlTranslate: rtl,
   } = swiper;
   let newIndex;
   swiper.allowSlidePrev = true;
@@ -19,15 +10,16 @@ export default function loopFix() {
   const snapTranslate = -snapGrid[activeIndex];
   const diff = snapTranslate - swiper.getTranslate();
 
+
   // Fix For Negative Oversliding
   if (activeIndex < loopedSlides) {
-    newIndex = slides.length - loopedSlides * 3 + activeIndex;
+    newIndex = (slides.length - (loopedSlides * 3)) + activeIndex;
     newIndex += loopedSlides;
     const slideChanged = swiper.slideTo(newIndex, 0, false, true);
     if (slideChanged && diff !== 0) {
       swiper.setTranslate((rtl ? -swiper.translate : swiper.translate) - diff);
     }
-  } else if (activeIndex >= slides.length - loopedSlides) {
+  } else if ((params.slidesPerView === 'auto' && activeIndex >= loopedSlides * 2) || (activeIndex >= slides.length - loopedSlides)) {
     // Fix For Positive Oversliding
     newIndex = -slides.length + activeIndex + loopedSlides;
     newIndex += loopedSlides;
@@ -38,6 +30,4 @@ export default function loopFix() {
   }
   swiper.allowSlidePrev = allowSlidePrev;
   swiper.allowSlideNext = allowSlideNext;
-
-  swiper.emit('loopFix');
 }

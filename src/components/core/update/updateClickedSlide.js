@@ -1,6 +1,6 @@
 import $ from '../../../utils/dom';
 
-export default function updateClickedSlide(e) {
+export default function (e) {
   const swiper = this;
   const params = swiper.params;
   const slide = $(e.target).closest(`.${params.slideClass}`)[0];
@@ -23,11 +23,7 @@ export default function updateClickedSlide(e) {
     swiper.clickedIndex = undefined;
     return;
   }
-  if (
-    params.slideToClickedSlide &&
-    swiper.clickedIndex !== undefined &&
-    swiper.clickedIndex !== swiper.activeIndex
-  ) {
+  if (params.slideToClickedSlide && swiper.clickedIndex !== undefined && swiper.clickedIndex !== swiper.activeIndex) {
     swiper.slideToClickedSlide();
   }
 }

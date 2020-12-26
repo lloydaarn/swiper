@@ -1,5 +1,6 @@
 /* eslint no-bitwise: ["error", { "allow": [">>"] }] */
-import { nextTick, bindModuleMethods } from '../../utils/utils';
+import Swiper from '../core/core-class';
+import Utils from '../../utils/utils';
 
 const Controller = {
   LinearSpline: function LinearSpline(x, y) {
@@ -11,7 +12,7 @@ const Controller = {
         minIndex = -1;
         maxIndex = array.length;
         while (maxIndex - minIndex > 1) {
-          guess = (maxIndex + minIndex) >> 1;
+          guess = maxIndex + minIndex >> 1;
           if (array[guess] <= val) {
             minIndex = guess;
           } else {
@@ -20,7 +21,7 @@ const Controller = {
         }
         return maxIndex;
       };
-    })();
+    }());
     this.x = x;
     this.y = y;
     this.lastIndex = x.length - 1;
@@ -39,9 +40,7 @@ const Controller = {
 
       // We have our indexes i1 & i3, so we can calculate already:
       // y2 := ((x2−x1) × (y3−y1)) ÷ (x3−x1) + y1
-      return (
-        ((x2 - this.x[i1]) * (this.y[i3] - this.y[i1])) / (this.x[i3] - this.x[i1]) + this.y[i1]
-      );
+      return (((x2 - this.x[i1]) * (this.y[i3] - this.y[i1])) / (this.x[i3] - this.x[i1])) + this.y[i1];
     };
     return this;
   },
@@ -59,7 +58,6 @@ const Controller = {
     const controlled = swiper.controller.control;
     let multiplier;
     let controlledTranslate;
-    const Swiper = swiper.constructor;
     function setControlledTranslate(c) {
       // this will create an Interpolate function based on the snapGrids
       // x is the Grid of the scrolled scroller and y will be the controlled scroller
@@ -74,9 +72,8 @@ const Controller = {
       }
 
       if (!controlledTranslate || swiper.params.controller.by === 'container') {
-        multiplier =
-          (c.maxTranslate() - c.minTranslate()) / (swiper.maxTranslate() - swiper.minTranslate());
-        controlledTranslate = (translate - swiper.minTranslate()) * multiplier + c.minTranslate();
+        multiplier = (c.maxTranslate() - c.minTranslate()) / (swiper.maxTranslate() - swiper.minTranslate());
+        controlledTranslate = ((translate - swiper.minTranslate()) * multiplier) + c.minTranslate();
       }
 
       if (swiper.params.controller.inverse) {
@@ -99,7 +96,6 @@ const Controller = {
   },
   setTransition(duration, byController) {
     const swiper = this;
-    const Swiper = swiper.constructor;
     const controlled = swiper.controller.control;
     let i;
     function setControlledTransition(c) {
@@ -107,7 +103,7 @@ const Controller = {
       if (duration !== 0) {
         c.transitionStart();
         if (c.params.autoHeight) {
-          nextTick(() => {
+          Utils.nextTick(() => {
             c.updateAutoHeight();
           });
         }
@@ -142,40 +138,47 @@ export default {
   },
   create() {
     const swiper = this;
-    bindModuleMethods(swiper, {
+    Utils.extend(swiper, {
       controller: {
         control: swiper.params.controller.control,
-        ...Controller,
+        getInterpolateFunction: Controller.getInterpolateFunction.bind(swiper),
+        setTranslate: Controller.setTranslate.bind(swiper),
+        setTransition: Controller.setTransition.bind(swiper),
       },
     });
   },
   on: {
-    update(swiper) {
+    update() {
+      const swiper = this;
       if (!swiper.controller.control) return;
       if (swiper.controller.spline) {
         swiper.controller.spline = undefined;
         delete swiper.controller.spline;
       }
     },
-    resize(swiper) {
+    resize() {
+      const swiper = this;
       if (!swiper.controller.control) return;
       if (swiper.controller.spline) {
         swiper.controller.spline = undefined;
         delete swiper.controller.spline;
       }
     },
-    observerUpdate(swiper) {
+    observerUpdate() {
+      const swiper = this;
       if (!swiper.controller.control) return;
       if (swiper.controller.spline) {
         swiper.controller.spline = undefined;
         delete swiper.controller.spline;
       }
     },
-    setTranslate(swiper, translate, byController) {
+    setTranslate(translate, byController) {
+      const swiper = this;
       if (!swiper.controller.control) return;
       swiper.controller.setTranslate(translate, byController);
     },
-    setTransition(swiper, duration, byController) {
+    setTransition(duration, byController) {
+      const swiper = this;
       if (!swiper.controller.control) return;
       swiper.controller.setTransition(duration, byController);
     },

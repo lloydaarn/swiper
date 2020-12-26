@@ -1,12 +1,13 @@
-import { getWindow } from 'ssr-window';
-import { bindModuleMethods } from '../../utils/utils';
+import { window } from 'ssr-window';
+import Utils from '../../utils/utils';
+import Support from '../../utils/support';
 
 const Observer = {
+  func: window.MutationObserver || window.WebkitMutationObserver,
   attach(target, options = {}) {
-    const window = getWindow();
     const swiper = this;
 
-    const ObserverFunc = window.MutationObserver || window.WebkitMutationObserver;
+    const ObserverFunc = Observer.func;
     const observer = new ObserverFunc((mutations) => {
       // The observerUpdate event should only be triggered
       // once despite the number of mutations.  Additional
@@ -36,7 +37,7 @@ const Observer = {
   },
   init() {
     const swiper = this;
-    if (!swiper.support.observer || !swiper.params.observer) return;
+    if (!Support.observer || !swiper.params.observer) return;
     if (swiper.params.observeParents) {
       const containerParents = swiper.$el.parents();
       for (let i = 0; i < containerParents.length; i += 1) {
@@ -44,9 +45,7 @@ const Observer = {
       }
     }
     // Observe container
-    swiper.observer.attach(swiper.$el[0], {
-      childList: swiper.params.observeSlideChildren,
-    });
+    swiper.observer.attach(swiper.$el[0], { childList: swiper.params.observeSlideChildren });
 
     // Observe wrapper
     swiper.observer.attach(swiper.$wrapperEl[0], { attributes: false });
@@ -69,18 +68,22 @@ export default {
   },
   create() {
     const swiper = this;
-    bindModuleMethods(swiper, {
+    Utils.extend(swiper, {
       observer: {
-        ...Observer,
+        init: Observer.init.bind(swiper),
+        attach: Observer.attach.bind(swiper),
+        destroy: Observer.destroy.bind(swiper),
         observers: [],
       },
     });
   },
   on: {
-    init(swiper) {
+    init() {
+      const swiper = this;
       swiper.observer.init();
     },
-    destroy(swiper) {
+    destroy() {
+      const swiper = this;
       swiper.observer.destroy();
     },
   },

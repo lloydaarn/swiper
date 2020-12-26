@@ -1,7 +1,6 @@
-export default function transitionStart(runCallbacks = true, direction) {
+export default function (runCallbacks = true, direction) {
   const swiper = this;
   const { activeIndex, params, previousIndex } = swiper;
-  if (params.cssMode) return;
   if (params.autoHeight) {
     swiper.updateAutoHeight();
   }

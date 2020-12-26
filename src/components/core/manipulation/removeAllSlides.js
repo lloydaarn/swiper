@@ -1,4 +1,4 @@
-export default function removeAllSlides() {
+export default function () {
   const swiper = this;
 
   const slidesIndexes = [];

@@ -1,12 +1,8 @@
-export default function setGrabCursor(moving) {
+import Support from '../../../utils/support';
+
+export default function (moving) {
   const swiper = this;
-  if (
-    swiper.support.touch ||
-    !swiper.params.simulateTouch ||
-    (swiper.params.watchOverflow && swiper.isLocked) ||
-    swiper.params.cssMode
-  )
-    return;
+  if (Support.touch || !swiper.params.simulateTouch || (swiper.params.watchOverflow && swiper.isLocked)) return;
   const el = swiper.el;
   el.style.cursor = 'move';
   el.style.cursor = moving ? '-webkit-grabbing' : '-webkit-grab';

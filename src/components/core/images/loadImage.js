@@ -1,15 +1,11 @@
-import { getWindow } from 'ssr-window';
-import $ from '../../../utils/dom';
+import { window } from 'ssr-window';
 
-export default function loadImage(imageEl, src, srcset, sizes, checkForComplete, callback) {
-  const window = getWindow();
+export default function (imageEl, src, srcset, sizes, checkForComplete, callback) {
   let image;
   function onReady() {
     if (callback) callback();
   }
-  const isPicture = $(imageEl).parent('picture')[0];
-
-  if (!isPicture && (!imageEl.complete || !checkForComplete)) {
+  if (!imageEl.complete || !checkForComplete) {
     if (src) {
       image = new window.Image();
       image.onload = onReady;

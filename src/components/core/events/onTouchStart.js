@@ -1,48 +1,26 @@
-import { getWindow, getDocument } from 'ssr-window';
+import { window, document } from 'ssr-window';
 import $ from '../../../utils/dom';
-import { extend, now } from '../../../utils/utils';
+import Utils from '../../../utils/utils';
 
-export default function onTouchStart(event) {
+export default function (event) {
   const swiper = this;
-  const document = getDocument();
-  const window = getWindow();
-
   const data = swiper.touchEventsData;
   const { params, touches } = swiper;
-
   if (swiper.animating && params.preventInteractionOnTransition) {
     return;
   }
   let e = event;
   if (e.originalEvent) e = e.originalEvent;
-  let $targetEl = $(e.target);
-
-  if (params.touchEventsTarget === 'wrapper') {
-    if (!$targetEl.closest(swiper.wrapperEl).length) return;
-  }
   data.isTouchEvent = e.type === 'touchstart';
   if (!data.isTouchEvent && 'which' in e && e.which === 3) return;
   if (!data.isTouchEvent && 'button' in e && e.button > 0) return;
   if (data.isTouched && data.isMoved) return;
-
-  // change target el for shadow root componenet
-  const swipingClassHasValue = !!params.noSwipingClass && params.noSwipingClass !== '';
-  if (swipingClassHasValue && e.target && e.target.shadowRoot && event.path && event.path[0]) {
-    $targetEl = $(event.path[0]);
-  }
-
-  if (
-    params.noSwiping &&
-    $targetEl.closest(
-      params.noSwipingSelector ? params.noSwipingSelector : `.${params.noSwipingClass}`,
-    )[0]
-  ) {
+  if (params.noSwiping && $(e.target).closest(params.noSwipingSelector ? params.noSwipingSelector : `.${params.noSwipingClass}`)[0]) {
     swiper.allowClick = true;
     return;
   }
-
   if (params.swipeHandler) {
-    if (!$targetEl.closest(params.swipeHandler)[0]) return;
+    if (!$(e).closest(params.swipeHandler)[0]) return;
   }
 
   touches.currentX = e.type === 'touchstart' ? e.targetTouches[0].pageX : e.pageX;
@@ -50,18 +28,19 @@ export default function onTouchStart(event) {
   const startX = touches.currentX;
   const startY = touches.currentY;
 
-  // Do NOT start if iOS edge swipe is detected. Otherwise iOS app cannot swipe-to-go-back anymore
+  // Do NOT start if iOS edge swipe is detected. Otherwise iOS app (UIWebView) cannot swipe-to-go-back anymore
 
   const edgeSwipeDetection = params.edgeSwipeDetection || params.iOSEdgeSwipeDetection;
   const edgeSwipeThreshold = params.edgeSwipeThreshold || params.iOSEdgeSwipeThreshold;
   if (
-    edgeSwipeDetection &&
-    (startX <= edgeSwipeThreshold || startX >= window.innerWidth - edgeSwipeThreshold)
+    edgeSwipeDetection
+    && ((startX <= edgeSwipeThreshold)
+    || (startX >= window.screen.width - edgeSwipeThreshold))
   ) {
     return;
   }
 
-  extend(data, {
+  Utils.extend(data, {
     isTouched: true,
     isMoved: false,
     allowTouchCallbacks: true,
@@ -71,28 +50,24 @@ export default function onTouchStart(event) {
 
   touches.startX = startX;
   touches.startY = startY;
-  data.touchStartTime = now();
+  data.touchStartTime = Utils.now();
   swiper.allowClick = true;
   swiper.updateSize();
   swiper.swipeDirection = undefined;
   if (params.threshold > 0) data.allowThresholdMove = false;
   if (e.type !== 'touchstart') {
     let preventDefault = true;
-    if ($targetEl.is(data.formElements)) preventDefault = false;
+    if ($(e.target).is(data.formElements)) preventDefault = false;
     if (
-      document.activeElement &&
-      $(document.activeElement).is(data.formElements) &&
-      document.activeElement !== $targetEl[0]
+      document.activeElement
+      && $(document.activeElement).is(data.formElements)
+      && document.activeElement !== e.target
     ) {
       document.activeElement.blur();
     }
 
-    const shouldPreventDefault =
-      preventDefault && swiper.allowTouchMove && params.touchStartPreventDefault;
-    if (
-      (params.touchStartForcePreventDefault || shouldPreventDefault) &&
-      !$targetEl[0].isContentEditable
-    ) {
+    const shouldPreventDefault = preventDefault && swiper.allowTouchMove && params.touchStartPreventDefault;
+    if (params.touchStartForcePreventDefault || shouldPreventDefault) {
       e.preventDefault();
     }
   }

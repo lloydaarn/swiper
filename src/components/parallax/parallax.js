@@ -1,5 +1,5 @@
 import $ from '../../utils/dom';
-import { bindModuleMethods } from '../../utils/utils';
+import Utils from '../../utils/utils';
 
 const Parallax = {
   setTransform(el, progress) {
@@ -26,49 +26,45 @@ const Parallax = {
       x = '0';
     }
 
-    if (x.indexOf('%') >= 0) {
+    if ((x).indexOf('%') >= 0) {
       x = `${parseInt(x, 10) * progress * rtlFactor}%`;
     } else {
       x = `${x * progress * rtlFactor}px`;
     }
-    if (y.indexOf('%') >= 0) {
+    if ((y).indexOf('%') >= 0) {
       y = `${parseInt(y, 10) * progress}%`;
     } else {
       y = `${y * progress}px`;
     }
 
     if (typeof opacity !== 'undefined' && opacity !== null) {
-      const currentOpacity = opacity - (opacity - 1) * (1 - Math.abs(progress));
+      const currentOpacity = opacity - ((opacity - 1) * (1 - Math.abs(progress)));
       $el[0].style.opacity = currentOpacity;
     }
     if (typeof scale === 'undefined' || scale === null) {
       $el.transform(`translate3d(${x}, ${y}, 0px)`);
     } else {
-      const currentScale = scale - (scale - 1) * (1 - Math.abs(progress));
+      const currentScale = scale - ((scale - 1) * (1 - Math.abs(progress)));
       $el.transform(`translate3d(${x}, ${y}, 0px) scale(${currentScale})`);
     }
   },
   setTranslate() {
     const swiper = this;
-    const { $el, slides, progress, snapGrid } = swiper;
-    $el
-      .children(
-        '[data-swiper-parallax], [data-swiper-parallax-x], [data-swiper-parallax-y], [data-swiper-parallax-opacity], [data-swiper-parallax-scale]',
-      )
-      .each((el) => {
+    const {
+      $el, slides, progress, snapGrid,
+    } = swiper;
+    $el.children('[data-swiper-parallax], [data-swiper-parallax-x], [data-swiper-parallax-y], [data-swiper-parallax-opacity], [data-swiper-parallax-scale]')
+      .each((index, el) => {
         swiper.parallax.setTransform(el, progress);
       });
-    slides.each((slideEl, slideIndex) => {
+    slides.each((slideIndex, slideEl) => {
       let slideProgress = slideEl.progress;
       if (swiper.params.slidesPerGroup > 1 && swiper.params.slidesPerView !== 'auto') {
-        slideProgress += Math.ceil(slideIndex / 2) - progress * (snapGrid.length - 1);
+        slideProgress += Math.ceil(slideIndex / 2) - (progress * (snapGrid.length - 1));
       }
       slideProgress = Math.min(Math.max(slideProgress, -1), 1);
-      $(slideEl)
-        .find(
-          '[data-swiper-parallax], [data-swiper-parallax-x], [data-swiper-parallax-y], [data-swiper-parallax-opacity], [data-swiper-parallax-scale]',
-        )
-        .each((el) => {
+      $(slideEl).find('[data-swiper-parallax], [data-swiper-parallax-x], [data-swiper-parallax-y], [data-swiper-parallax-opacity], [data-swiper-parallax-scale]')
+        .each((index, el) => {
           swiper.parallax.setTransform(el, slideProgress);
         });
     });
@@ -76,14 +72,10 @@ const Parallax = {
   setTransition(duration = this.params.speed) {
     const swiper = this;
     const { $el } = swiper;
-    $el
-      .find(
-        '[data-swiper-parallax], [data-swiper-parallax-x], [data-swiper-parallax-y], [data-swiper-parallax-opacity], [data-swiper-parallax-scale]',
-      )
-      .each((parallaxEl) => {
+    $el.find('[data-swiper-parallax], [data-swiper-parallax-x], [data-swiper-parallax-y], [data-swiper-parallax-opacity], [data-swiper-parallax-scale]')
+      .each((index, parallaxEl) => {
         const $parallaxEl = $(parallaxEl);
-        let parallaxDuration =
-          parseInt($parallaxEl.attr('data-swiper-parallax-duration'), 10) || duration;
+        let parallaxDuration = parseInt($parallaxEl.attr('data-swiper-parallax-duration'), 10) || duration;
         if (duration === 0) parallaxDuration = 0;
         $parallaxEl.transition(parallaxDuration);
       });
@@ -99,27 +91,33 @@ export default {
   },
   create() {
     const swiper = this;
-    bindModuleMethods(swiper, {
+    Utils.extend(swiper, {
       parallax: {
-        ...Parallax,
+        setTransform: Parallax.setTransform.bind(swiper),
+        setTranslate: Parallax.setTranslate.bind(swiper),
+        setTransition: Parallax.setTransition.bind(swiper),
       },
     });
   },
   on: {
-    beforeInit(swiper) {
+    beforeInit() {
+      const swiper = this;
       if (!swiper.params.parallax.enabled) return;
       swiper.params.watchSlidesProgress = true;
       swiper.originalParams.watchSlidesProgress = true;
     },
-    init(swiper) {
+    init() {
+      const swiper = this;
       if (!swiper.params.parallax.enabled) return;
       swiper.parallax.setTranslate();
     },
-    setTranslate(swiper) {
+    setTranslate() {
+      const swiper = this;
       if (!swiper.params.parallax.enabled) return;
       swiper.parallax.setTranslate();
     },
-    setTransition(swiper, duration) {
+    setTransition(duration) {
+      const swiper = this;
       if (!swiper.params.parallax.enabled) return;
       swiper.parallax.setTransition(duration);
     },

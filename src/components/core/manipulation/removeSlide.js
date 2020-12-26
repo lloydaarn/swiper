@@ -1,4 +1,6 @@
-export default function removeSlide(slidesIndexes) {
+import Support from '../../../utils/support';
+
+export default function (slidesIndexes) {
   const swiper = this;
   const { params, $wrapperEl, activeIndex } = swiper;
 
@@ -29,7 +31,7 @@ export default function removeSlide(slidesIndexes) {
     swiper.loopCreate();
   }
 
-  if (!(params.observer && swiper.support.observer)) {
+  if (!(params.observer && Support.observer)) {
     swiper.update();
   }
   if (params.loop) {

@@ -4,22 +4,10 @@ export default {
   touchEventsTarget: 'container',
   initialSlide: 0,
   speed: 300,
-  cssMode: false,
-  updateOnWindowResize: true,
-  nested: false,
-
-  // Overrides
-  width: null,
-  height: null,
-
   //
   preventInteractionOnTransition: false,
 
-  // ssr
-  userAgent: null,
-  url: null,
-
-  // To support iOS's swipe-to-go-back gesture (when being used in-app).
+  // To support iOS's swipe-to-go-back gesture (when being used in-app, with UIWebView).
   edgeSwipeDetection: false,
   edgeSwipeThreshold: 20,
 
@@ -47,6 +35,7 @@ export default {
 
   // Breakpoints
   breakpoints: undefined,
+  breakpointsInverse: false,
 
   // Slides grid
   spaceBetween: 0,
@@ -54,9 +43,7 @@ export default {
   slidesPerColumn: 1,
   slidesPerColumnFill: 'column',
   slidesPerGroup: 1,
-  slidesPerGroupSkip: 0,
   centeredSlides: false,
-  centeredSlidesBounds: false,
   slidesOffsetBefore: 0, // in px
   slidesOffsetAfter: 0, // in px
   normalizeSlideIndex: true,
@@ -79,7 +66,7 @@ export default {
   followFinger: true,
   allowTouchMove: true,
   threshold: 0,
-  touchMoveStopPropagation: false,
+  touchMoveStopPropagation: true,
   touchStartPreventDefault: true,
   touchStartForcePreventDefault: false,
   touchReleaseOnEdges: false,
@@ -112,7 +99,6 @@ export default {
   loopAdditionalSlides: 0,
   loopedSlides: null,
   loopFillGroupWithBlank: false,
-  loopPreventsSlide: true,
 
   // Swiping/no swiping
   allowSlidePrev: true,
@@ -141,7 +127,4 @@ export default {
 
   // Callbacks
   runCallbacksOnInit: true,
-
-  // Internals
-  _emitClasses: false,
 };

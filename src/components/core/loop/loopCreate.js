@@ -1,9 +1,8 @@
-import { getDocument } from 'ssr-window';
+import { document } from 'ssr-window';
 import $ from '../../../utils/dom';
 
-export default function loopCreate() {
+export default function () {
   const swiper = this;
-  const document = getDocument();
   const { params, $wrapperEl } = swiper;
   // Remove duplicated slides
   $wrapperEl.children(`.${params.slideClass}.${params.slideDuplicateClass}`).remove();
@@ -14,9 +13,7 @@ export default function loopCreate() {
     const blankSlidesNum = params.slidesPerGroup - (slides.length % params.slidesPerGroup);
     if (blankSlidesNum !== params.slidesPerGroup) {
       for (let i = 0; i < blankSlidesNum; i += 1) {
-        const blankNode = $(document.createElement('div')).addClass(
-          `${params.slideClass} ${params.slideBlankClass}`,
-        );
+        const blankNode = $(document.createElement('div')).addClass(`${params.slideClass} ${params.slideBlankClass}`);
         $wrapperEl.append(blankNode);
       }
       slides = $wrapperEl.children(`.${params.slideClass}`);
@@ -25,7 +22,7 @@ export default function loopCreate() {
 
   if (params.slidesPerView === 'auto' && !params.loopedSlides) params.loopedSlides = slides.length;
 
-  swiper.loopedSlides = Math.ceil(parseFloat(params.loopedSlides || params.slidesPerView, 10));
+  swiper.loopedSlides = parseInt(params.loopedSlides || params.slidesPerView, 10);
   swiper.loopedSlides += params.loopAdditionalSlides;
   if (swiper.loopedSlides > slides.length) {
     swiper.loopedSlides = slides.length;
@@ -33,14 +30,10 @@ export default function loopCreate() {
 
   const prependSlides = [];
   const appendSlides = [];
-  slides.each((el, index) => {
+  slides.each((index, el) => {
     const slide = $(el);
-    if (index < swiper.loopedSlides) {
-      appendSlides.push(el);
-    }
-    if (index < slides.length && index >= slides.length - swiper.loopedSlides) {
-      prependSlides.push(el);
-    }
+    if (index < swiper.loopedSlides) appendSlides.push(el);
+    if (index < slides.length && index >= slides.length - swiper.loopedSlides) prependSlides.push(el);
     slide.attr('data-swiper-slide-index', index);
   });
   for (let i = 0; i < appendSlides.length; i += 1) {

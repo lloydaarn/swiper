@@ -1,4 +1,6 @@
-export default function appendSlide(slides) {
+import Support from '../../../utils/support';
+
+export default function (slides) {
   const swiper = this;
   const { $wrapperEl, params } = swiper;
   if (params.loop) {
@@ -14,7 +16,7 @@ export default function appendSlide(slides) {
   if (params.loop) {
     swiper.loopCreate();
   }
-  if (!(params.observer && swiper.support.observer)) {
+  if (!(params.observer && Support.observer)) {
     swiper.update();
   }
 }

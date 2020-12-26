@@ -1,16 +1,16 @@
-import { extend } from '../../../utils/utils';
+import Utils from '../../../utils/utils';
 
-export default function updateSize() {
+export default function () {
   const swiper = this;
   let width;
   let height;
   const $el = swiper.$el;
-  if (typeof swiper.params.width !== 'undefined' && swiper.params.width !== null) {
+  if (typeof swiper.params.width !== 'undefined') {
     width = swiper.params.width;
   } else {
     width = $el[0].clientWidth;
   }
-  if (typeof swiper.params.height !== 'undefined' && swiper.params.height !== null) {
+  if (typeof swiper.params.height !== 'undefined') {
     height = swiper.params.height;
   } else {
     height = $el[0].clientHeight;
@@ -20,19 +20,10 @@ export default function updateSize() {
   }
 
   // Subtract paddings
-  width =
-    width -
-    parseInt($el.css('padding-left') || 0, 10) -
-    parseInt($el.css('padding-right') || 0, 10);
-  height =
-    height -
-    parseInt($el.css('padding-top') || 0, 10) -
-    parseInt($el.css('padding-bottom') || 0, 10);
+  width = width - parseInt($el.css('padding-left'), 10) - parseInt($el.css('padding-right'), 10);
+  height = height - parseInt($el.css('padding-top'), 10) - parseInt($el.css('padding-bottom'), 10);
 
-  if (Number.isNaN(width)) width = 0;
-  if (Number.isNaN(height)) height = 0;
-
-  extend(swiper, {
+  Utils.extend(swiper, {
     width,
     height,
     size: swiper.isHorizontal() ? width : height,

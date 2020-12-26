@@ -1,4 +1,4 @@
-import { extend, bindModuleMethods } from '../../utils/utils';
+import Utils from '../../utils/utils';
 
 const Fade = {
   setTranslate() {
@@ -53,14 +53,16 @@ export default {
   },
   create() {
     const swiper = this;
-    bindModuleMethods(swiper, {
+    Utils.extend(swiper, {
       fadeEffect: {
-        ...Fade,
+        setTranslate: Fade.setTranslate.bind(swiper),
+        setTransition: Fade.setTransition.bind(swiper),
       },
     });
   },
   on: {
-    beforeInit(swiper) {
+    beforeInit() {
+      const swiper = this;
       if (swiper.params.effect !== 'fade') return;
       swiper.classNames.push(`${swiper.params.containerModifierClass}fade`);
       const overwriteParams = {
@@ -71,14 +73,16 @@ export default {
         spaceBetween: 0,
         virtualTranslate: true,
       };
-      extend(swiper.params, overwriteParams);
-      extend(swiper.originalParams, overwriteParams);
+      Utils.extend(swiper.params, overwriteParams);
+      Utils.extend(swiper.originalParams, overwriteParams);
     },
-    setTranslate(swiper) {
+    setTranslate() {
+      const swiper = this;
       if (swiper.params.effect !== 'fade') return;
       swiper.fadeEffect.setTranslate();
     },
-    setTransition(swiper, duration) {
+    setTransition(duration) {
+      const swiper = this;
       if (swiper.params.effect !== 'fade') return;
       swiper.fadeEffect.setTransition(duration);
     },

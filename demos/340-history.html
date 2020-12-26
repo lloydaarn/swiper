@@ -1,32 +1,27 @@
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <title>Swiper Playground</title>
-  <link rel="stylesheet" href="../package/swiper-bundle.min.css">
+  <link rel="stylesheet" href="../dist/css/swiper.min.css">
   <meta name="viewport" content="width=device-width">
   <style>
-    html,
-    body {
+    html, body {
       position: relative;
       height: 100%;
     }
-
     body {
       background: #eee;
       font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
       font-size: 14px;
-      color: #000;
+      color:#000;
       margin: 0;
       padding: 0;
     }
-
     .swiper-container {
       width: 100%;
       height: 100%;
     }
-
     .swiper-slide {
       text-align: center;
       font-size: 18px;
@@ -48,7 +43,6 @@
     }
   </style>
 </head>
-
 <body>
   <div class="swiper-container">
     <div class="swiper-scrollbar"></div>
@@ -68,7 +62,7 @@
     </div>
     <div class="swiper-pagination"></div>
   </div>
-  <script src="../package/swiper-bundle.min.js"></script>
+  <script src="../dist/js/swiper.min.js"></script>
   <script>
     var swiper = new Swiper('.swiper-container', {
       spaceBetween: 50,
@@ -86,5 +80,4 @@
     });
   </script>
 </body>
-
 </html>

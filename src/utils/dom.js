@@ -6,6 +6,7 @@ import {
   toggleClass,
   attr,
   removeAttr,
+  data,
   transform,
   transition,
   on,
@@ -14,7 +15,6 @@ import {
   transitionEnd,
   outerWidth,
   outerHeight,
-  styles,
   offset,
   css,
   each,
@@ -34,9 +34,10 @@ import {
   closest,
   find,
   children,
-  filter,
   remove,
-} from 'dom7';
+  add,
+  styles,
+} from 'dom7/dist/dom7.modular';
 
 const Methods = {
   addClass,
@@ -45,6 +46,7 @@ const Methods = {
   toggleClass,
   attr,
   removeAttr,
+  data,
   transform,
   transition,
   on,
@@ -53,7 +55,6 @@ const Methods = {
   transitionEnd,
   outerWidth,
   outerHeight,
-  styles,
   offset,
   css,
   each,
@@ -73,12 +74,13 @@ const Methods = {
   closest,
   find,
   children,
-  filter,
   remove,
+  add,
+  styles,
 };
 
 Object.keys(Methods).forEach((methodName) => {
-  $.fn[methodName] = Methods[methodName];
+  $.fn[methodName] = $.fn[methodName] || Methods[methodName];
 });
 
 export default $;

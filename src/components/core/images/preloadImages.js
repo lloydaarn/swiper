@@ -1,4 +1,4 @@
-export default function preloadImages() {
+export default function () {
   const swiper = this;
   swiper.imagesToLoad = swiper.$el.find('img');
   function onReady() {
@@ -17,7 +17,7 @@ export default function preloadImages() {
       imageEl.srcset || imageEl.getAttribute('srcset'),
       imageEl.sizes || imageEl.getAttribute('sizes'),
       true,
-      onReady,
+      onReady
     );
   }
 }
