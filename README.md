@@ -1,7 +1,7 @@
 Swiper 4.5.3
 ==========
 
-**This is a forked from [Swiper](https://github.com/nolimits4web/swiper) a version that still compatible with IE11.**
+**This is a fork from [Swiper](https://github.com/nolimits4web/swiper) a version that still compatible with IE11.**
 
 Swiper - is the free and most modern mobile touch slider with hardware accelerated transitions and amazing native behavior. It is intended to be used in mobile websites, mobile web apps, and mobile native/hybrid apps. Designed mostly for iOS, but also works great on latest Android, Windows Phone 8 and modern Desktop browsers.
 
